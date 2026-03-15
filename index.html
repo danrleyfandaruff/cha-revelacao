@@ -437,7 +437,7 @@
       <div class="step-divider" id="step-divider"></div>
       <button class="step-btn locked" id="step-btn-2" onclick="onStepClick(2)">
         <div class="step-circle" id="step-circle-2">🔒</div>
-        <span class="step-label">🎁 Presentes</span>
+        <span class="step-label">🎁 Mimos</span>
       </button>
     </div>
   </div>
@@ -464,8 +464,8 @@
     <!-- Presentes -->
     <div class="tab-content" id="content-presentes">
       <div class="cat-header">
-        <h2>🎁 Lista de Presentes</h2>
-        <p>Presentes especiais para receber nosso bebê — escolha quantos quiser!</p>
+        <h2>🎁 Lista de Mimos</h2>
+        <p>Mimos especiais para receber nosso bebê — escolha quantos quiser!</p>
       </div>
 
       <!-- Botão finalizar (aparece após 1º presente) -->
@@ -486,7 +486,9 @@
         <h2>Muito obrigado!</h2>
         <div class="done-divider"></div>
         <p class="done-name" id="done-name"></p>
-        <p>Suas escolhas foram registradas com sucesso.<br>Mal podemos esperar para ver você no chá! 💛</p>
+        <p>
+          Percebemos que você encerrou suas escolhas na lista de presentes. Pedimos, por gentileza, que siga os itens selecionados conforme a lista, pois ela foi organizada para evitar repetições e nos ajudar na preparação para a chegada do bebê.
+          <br>Mal podemos esperar para ver você no chá! 🩷💙</p>
       </div>
     </div>
 
@@ -558,7 +560,7 @@
         btn2.className = 'step-btn active'; c2.textContent = '2';
         div.classList.add('done');
         hint.className   = 'hint-banner step2 show';
-        hint.textContent = '🎁 Passo 2 de 2 — Ótimo! Agora escolha os presentes';
+        hint.textContent = '🎁 Passo 2 de 2 — Ótimo! Agora escolha os mimos';
         document.getElementById('content-fraldas').classList.remove('active');
         document.getElementById('content-presentes').classList.add('active');
       }
@@ -680,7 +682,7 @@
 
       if (nPresentes > 0) {
         bar.classList.add('show');
-        const plural = nPresentes === 1 ? '1 presente' : `${nPresentes} presentes`;
+        const plural = nPresentes === 1 ? '1 mimo' : `${nPresentes} mimos`;
         msg.innerHTML = `Você escolheu <strong>${plural}</strong> — pronto para confirmar? 🎉`;
         btnF.textContent = `✓ Finalizar (${total} ite${total === 1 ? 'm' : 'ns'})`;
       } else {
