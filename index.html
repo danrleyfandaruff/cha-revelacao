@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chá Revelação 🍼 Lista de Presentes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --cream:       #faf7f2;
+      --beige:       #e8ddd0;
+      --beige-dark:  #d4c4b0;
+      --gold:        #c9a84c;
+      --gold-light:  #e8d5a3;
+      --brown:       #4a3728;
+      --brown-light: #8a6a5a;
+      --green:       #4a7a4a;
+      --orange:      #c9843c;
+      --red:         #a05050;
+      --white:       #ffffff;
+      --muted:       #b0a090;
+      --shadow-sm:   0 2px 12px rgba(74,55,40,.07);
+      --shadow-md:   0 4px 24px rgba(74,55,40,.11);
+      --shadow-lg:   0 8px 36px rgba(74,55,40,.17);
+      --radius:      16px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Lato', system-ui, sans-serif;
+      background: var(--cream);
+      color: var(--brown);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ─────────────────────────────────────── */
+    .header {
+      background: var(--white);
+      padding: 50px 24px 38px;
+      text-align: center;
+      border-bottom: 1px solid var(--beige);
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
+    }
+    .header-icons { font-size: 2.5rem; margin-bottom: 12px; display: block; line-height: 1; }
+    .header h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(1.8rem, 5vw, 2.7rem);
+      font-weight: 700;
+      color: var(--brown);
+      letter-spacing: -.5px;
+      margin-bottom: 4px;
+    }
+    .header-subtitle {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-style: italic;
+      color: var(--gold);
+      font-size: 1rem;
+      margin-bottom: 16px;
+    }
+    .divider {
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; max-width: 240px; margin: 0 auto 16px;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--gold); opacity: .4;
+    }
+    .divider span { color: var(--gold); font-size: 1rem; }
+    .header p {
+      color: var(--brown-light); font-size: .97rem; font-weight: 300;
+      max-width: 460px; margin: 0 auto; line-height: 1.65;
+    }
+
+    /* ── STEP INDICATOR ─────────────────────────────── */
+    .steps-wrapper {
+      display: flex; justify-content: center;
+      padding: 30px 20px 0;
+    }
+    .steps {
+      display: flex; align-items: center; gap: 0;
+      background: var(--white);
+      border: 1.5px solid var(--beige);
+      border-radius: 14px;
+      padding: 6px;
+      box-shadow: var(--shadow-sm);
+    }
+    .step-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 20px;
+      border: none; border-radius: 10px;
+      background: transparent;
+      cursor: pointer;
+      transition: background .2s;
+      font-family: 'Lato', sans-serif;
+    }
+    .step-btn.locked { cursor: not-allowed; }
+    .step-btn.active { background: var(--brown); }
+    .step-btn.done   { cursor: default; }
+    .step-btn:hover:not(.active):not(.locked):not(.done) { background: var(--cream); }
+
+    .step-circle {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .78rem; font-weight: 700;
+      flex-shrink: 0;
+      transition: all .3s;
+    }
+    .step-btn.pending  .step-circle { background: var(--beige);  color: var(--muted); border: 2px solid var(--beige-dark); }
+    .step-btn.active   .step-circle { background: var(--gold);   color: var(--white); border: 2px solid var(--gold); }
+    .step-btn.done     .step-circle { background: var(--green);  color: var(--white); border: 2px solid var(--green); }
+    .step-btn.locked   .step-circle { background: var(--beige);  color: var(--muted); border: 2px solid var(--beige-dark); font-size: .7rem; }
+
+    .step-label {
+      font-size: .8rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .5px; white-space: nowrap;
+      transition: color .3s;
+    }
+    .step-btn.pending .step-label  { color: var(--muted); }
+    .step-btn.active  .step-label  { color: var(--white); }
+    .step-btn.done    .step-label  { color: var(--brown-light); }
+    .step-btn.locked  .step-label  { color: var(--muted); }
+
+    .step-divider {
+      width: 28px; height: 2px;
+      background: var(--beige);
+      margin: 0 2px;
+      flex-shrink: 0;
+      border-radius: 2px;
+      transition: background .4s;
+    }
+    .step-divider.done { background: var(--green); }
+
+    /* progress hint banner */
+    .hint-banner {
+      max-width: 680px; margin: 22px auto 0;
+      padding: 12px 20px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: .88rem; font-weight: 700;
+      display: none;
+    }
+    .hint-banner.show { display: block; }
+    .hint-banner.step1 {
+      background: #fff8e8; color: var(--brown);
+      border: 1.5px solid var(--gold-light);
+    }
+    .hint-banner.step2 {
+      background: #e8f4e8; color: var(--green);
+      border: 1.5px solid #b0d4b0;
+    }
+
+    /* ── MAIN ───────────────────────────────────────── */
+    .main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 20px 72px;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .cat-header { text-align: center; margin-bottom: 26px; }
+    .cat-header h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.6rem; color: var(--brown); margin-bottom: 5px;
+    }
+    .cat-header p { color: var(--brown-light); font-size: .9rem; }
+
+    /* ── GRID ───────────────────────────────────────── */
+    .items-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+      gap: 18px;
+    }
+
+    /* ── CARD ───────────────────────────────────────── */
+    .item-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 22px 20px 17px;
+      box-shadow: var(--shadow-sm);
+      border: 1.5px solid transparent;
+      display: flex; flex-direction: column;
+      transition: transform .25s, box-shadow .25s, border-color .25s;
+      position: relative; overflow: hidden;
+    }
+    .item-card:not(.reserved):hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--beige-dark);
+    }
+    .item-card.reserved { background: #f7f4f1; opacity: .7; }
+
+    .card-emoji { font-size: 2.2rem; margin-bottom: 9px; display: block; }
+    .card-name {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.06rem; font-weight: 600;
+      color: var(--brown); margin-bottom: 6px; line-height: 1.3;
+    }
+    .card-desc {
+      color: var(--brown-light); font-size: .82rem;
+      line-height: 1.55; flex: 1; margin-bottom: 15px;
+    }
+    .card-footer {
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 8px; flex-wrap: wrap;
+    }
+
+    .avail {
+      display: flex; align-items: center; gap: 5px;
+      font-size: .75rem; font-weight: 700;
+    }
+    .avail-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .avail.ok  { color: var(--green);  } .avail.ok  .avail-dot { background: var(--green); }
+    .avail.low { color: var(--orange); } .avail.low .avail-dot { background: var(--orange); }
+    .avail.out { color: var(--red);    } .avail.out .avail-dot { background: var(--red); }
+
+    .btn-reserve {
+      padding: 8px 17px; border: none; border-radius: 8px;
+      background: var(--gold); color: var(--white);
+      font-family: 'Lato', sans-serif; font-size: .82rem; font-weight: 700;
+      cursor: pointer; transition: background .2s, transform .15s;
+      white-space: nowrap;
+    }
+    .btn-reserve:hover:not(:disabled) { background: var(--brown); transform: scale(1.04); }
+    .btn-reserve:disabled {
+      background: var(--beige); color: var(--brown-light);
+      cursor: not-allowed; transform: none;
+    }
+
+    /* ── LOADING ────────────────────────────────────── */
+    .loading { grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--brown-light); }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--beige); border-top-color: var(--gold);
+      border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 13px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── DONE SCREEN ────────────────────────────────── */
+    #done-screen {
+      display: none;
+      text-align: center;
+      padding: 60px 20px 40px;
+      animation: fadeIn .5s ease;
+    }
+    #done-screen.show { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+    .done-card {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 48px 36px;
+      max-width: 480px;
+      margin: 0 auto;
+      box-shadow: var(--shadow-lg);
+      border: 1.5px solid var(--gold-light);
+    }
+    .done-big-emoji { font-size: 4rem; display: block; margin-bottom: 16px; }
+    .done-card h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.9rem; color: var(--brown); margin-bottom: 10px;
+    }
+    .done-card p { color: var(--brown-light); font-size: .97rem; line-height: 1.65; margin-bottom: 8px; }
+    .done-name { color: var(--gold); font-weight: 700; font-size: 1.05rem; }
+    .done-divider { width: 60px; height: 2px; background: var(--gold-light); margin: 18px auto; border-radius: 2px; }
+
+    /* ── MODAL ──────────────────────────────────────── */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(74,55,40,.48);
+      z-index: 900; align-items: center; justify-content: center;
+      padding: 20px; backdrop-filter: blur(5px);
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: var(--white); border-radius: 20px;
+      padding: 36px 30px 28px; max-width: 420px; width: 100%;
+      box-shadow: 0 24px 64px rgba(74,55,40,.28);
+      animation: modalIn .28s ease;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(.93) translateY(16px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-step-tag {
+      display: inline-block; background: var(--gold-light);
+      color: var(--brown); font-size: .72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .5px;
+      padding: 3px 10px; border-radius: 20px; margin-bottom: 12px;
+    }
+    .modal-emoji { font-size: 2.5rem; text-align: center; display: block; margin-bottom: 8px; }
+    .modal h3 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.32rem; color: var(--brown); text-align: center; margin-bottom: 5px;
+    }
+    .modal-sub {
+      color: var(--brown-light); font-size: .87rem;
+      text-align: center; margin-bottom: 20px; line-height: 1.5;
+    }
+    .modal label {
+      display: block; font-size: .74rem; font-weight: 700;
+      color: var(--brown); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px;
+    }
+    .modal input[type="text"] {
+      width: 100%; padding: 11px 13px;
+      border: 2px solid var(--beige); border-radius: 10px;
+      font-family: 'Lato', sans-serif; font-size: .96rem;
+      color: var(--brown); background: var(--cream);
+      transition: border-color .2s; margin-bottom: 18px;
+    }
+    .modal input[type="text"]:focus { outline: none; border-color: var(--gold); }
+    .modal-btns { display: flex; gap: 10px; }
+    .btn-cancel {
+      flex: 1; padding: 12px; border: 2px solid var(--beige);
+      background: transparent; border-radius: 10px;
+      color: var(--brown-light); font-family: 'Lato', sans-serif;
+      font-size: .9rem; font-weight: 700; cursor: pointer; transition: background .2s;
+    }
+    .btn-cancel:hover { background: var(--beige); }
+    .btn-confirm {
+      flex: 2; padding: 12px; border: none; border-radius: 10px;
+      background: var(--gold); color: var(--white);
+      font-family: 'Lato', sans-serif; font-size: .9rem; font-weight: 700;
+      cursor: pointer; transition: background .2s;
+    }
+    .btn-confirm:hover:not(:disabled) { background: var(--brown); }
+    .btn-confirm:disabled { background: var(--beige); color: var(--brown-light); cursor: not-allowed; }
+
+    /* ── TOAST ──────────────────────────────────────── */
+    .toast {
+      position: fixed; bottom: 26px; left: 50%;
+      transform: translateX(-50%) translateY(120px);
+      padding: 12px 24px; border-radius: 50px;
+      font-size: .88rem; font-weight: 700;
+      box-shadow: 0 8px 32px rgba(0,0,0,.2);
+      transition: transform .38s cubic-bezier(.34,1.56,.64,1);
+      z-index: 9999; white-space: nowrap; pointer-events: none;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { background: var(--green);  color: #fff; }
+    .toast.error   { background: #8a3a3a;       color: #fff; }
+    .toast.info    { background: var(--brown);  color: #fff; }
+    .toast.warn    { background: var(--orange); color: #fff; }
+
+    .footer-note {
+      text-align: center; color: var(--brown-light);
+      font-size: .77rem; margin-top: 42px; opacity: .6;
+    }
+
+    @media (max-width: 540px) {
+      .items-grid { grid-template-columns: 1fr; }
+      .step-label { font-size: .74rem; }
+      .modal { padding: 26px 18px 22px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <span class="header-icons">🌿 🍼 ✨</span>
+    <h1>Chá Revelação</h1>
+    <p class="header-subtitle">Laura &amp; Benicio</p>
+    <div class="divider"><span>❋</span></div>
+    <p>Escolha um item para presentear nosso bebê com muito amor.<br>Cada presente é uma bênção especial para a nossa família! 💛</p>
+  </header>
+
+  <!-- STEP INDICATOR -->
+  <div class="steps-wrapper">
+    <div class="steps">
+      <button class="step-btn active" id="step-btn-1" onclick="onStepClick(1)">
+        <div class="step-circle" id="step-circle-1">1</div>
+        <span class="step-label">🧷 Fraldas</span>
+      </button>
+      <div class="step-divider" id="step-divider"></div>
+      <button class="step-btn locked" id="step-btn-2" onclick="onStepClick(2)">
+        <div class="step-circle" id="step-circle-2">🔒</div>
+        <span class="step-label">🎁 Presentes</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- HINT BANNER -->
+  <div class="hint-banner step1 show" id="hint-banner">
+    🧷 Passo 1 de 2 — Escolha uma fralda para continuar
+  </div>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- Fraldas -->
+    <div class="tab-content active" id="content-fraldas">
+      <div class="cat-header">
+        <h2>🧷 Lista de Fraldas</h2>
+        <p>Itens essenciais para o cuidado diário do bebê</p>
+      </div>
+      <div class="items-grid" id="grid-fraldas">
+        <div class="loading"><div class="spinner"></div><p>Carregando lista…</p></div>
+      </div>
+    </div>
+
+    <!-- Presentes -->
+    <div class="tab-content" id="content-presentes">
+      <div class="cat-header">
+        <h2>🎁 Lista de Presentes</h2>
+        <p>Presentes especiais para receber nosso bebê</p>
+      </div>
+      <div class="items-grid" id="grid-presentes">
+        <div class="loading"><div class="spinner"></div><p>Carregando lista…</p></div>
+      </div>
+    </div>
+
+    <!-- Done screen -->
+    <div id="done-screen">
+      <div class="done-card">
+        <span class="done-big-emoji">🎉</span>
+        <h2>Muito obrigado!</h2>
+        <div class="done-divider"></div>
+        <p class="done-name" id="done-name"></p>
+        <p>Suas escolhas foram registradas com sucesso.<br>Mal podemos esperar para ver você no chá! 💛</p>
+      </div>
+    </div>
+
+    <p class="footer-note">💛 Feito com amor para o nosso chá revelação</p>
+  </main>
+
+  <!-- MODAL -->
+  <div class="overlay" id="overlay" onclick="handleOverlayClick(event)">
+    <div class="modal">
+      <div style="text-align:center">
+        <span class="modal-step-tag" id="modal-step-tag">Passo 1 de 2</span>
+      </div>
+      <span class="modal-emoji" id="modal-emoji">🎁</span>
+      <h3 id="modal-title">Reservar</h3>
+      <p class="modal-sub" id="modal-sub">Qual é o seu nome?</p>
+      <label for="guest-name">Seu nome completo</label>
+      <input type="text" id="guest-name" placeholder="Digite seu nome aqui…" maxlength="120" autocomplete="name" />
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+        <button class="btn-confirm" id="btn-confirm" onclick="confirmReservation()">Confirmar 🎉</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ── Supabase ──────────────────────────────────────────────────────────
+    const { createClient } = supabase;
+    const db = createClient(
+      'https://tjdrvdadfsmjqeaqvqti.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqZHJ2ZGFkZnNtanFlYXF2cXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzNDY1OTAsImV4cCI6MjA4NTkyMjU5MH0.0uWaZbeLJCJGNxbe7YE7JyPNDTWoKg6tn3pB34RwrQ8'
+    );
+
+    // ── State ─────────────────────────────────────────────────────────────
+    let pendingItem    = null;    // { id, name, emoji, category }
+    let currentStep    = 1;       // 1 = fraldas, 2 = presentes
+    let fraldasDone    = false;
+    let cachedName     = '';      // reutiliza o nome no passo 2
+    let toastTimer     = null;
+
+    // ── Boot ──────────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      loadItems('fraldas');
+      loadItems('presentes');
+    });
+
+    // ── Step click (navigation guard) ─────────────────────────────────────
+    function onStepClick(step) {
+      if (step === 1 && currentStep !== 1) {
+        // não permite voltar ao passo 1 depois de avançar
+        return;
+      }
+      if (step === 2 && !fraldasDone) {
+        showToast('🧷 Primeiro escolha uma fralda!', 'warn');
+        // animate the step 1 button to draw attention
+        const btn = document.getElementById('step-btn-1');
+        btn.style.transform = 'scale(1.06)';
+        setTimeout(() => btn.style.transform = '', 300);
+        return;
+      }
+    }
+
+    // ── Update step UI ─────────────────────────────────────────────────────
+    function setStep(step) {
+      currentStep = step;
+
+      const btn1 = document.getElementById('step-btn-1');
+      const btn2 = document.getElementById('step-btn-2');
+      const c1   = document.getElementById('step-circle-1');
+      const c2   = document.getElementById('step-circle-2');
+      const div  = document.getElementById('step-divider');
+      const hint = document.getElementById('hint-banner');
+
+      if (step === 2) {
+        // Step 1 → done
+        btn1.className  = 'step-btn done';
+        c1.textContent  = '✓';
+        // Step 2 → active
+        btn2.className  = 'step-btn active';
+        c2.textContent  = '2';
+        // connector
+        div.classList.add('done');
+        // hint
+        hint.className     = 'hint-banner step2 show';
+        hint.textContent   = '🎁 Passo 2 de 2 — Ótimo! Agora escolha um presente';
+        // show presentes tab
+        document.getElementById('content-fraldas').classList.remove('active');
+        document.getElementById('content-presentes').classList.add('active');
+      }
+    }
+
+    // ── Load items ────────────────────────────────────────────────────────
+    async function loadItems(category) {
+      const grid = document.getElementById('grid-' + category);
+
+      const { data, error } = await db
+        .from('items')
+        .select('id, name, description, emoji, quantity_available')
+        .eq('category', category)
+        .order('sort_order', { ascending: true });
+
+      if (error) {
+        grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:var(--red);padding:40px 20px">
+          ⚠️ Erro ao carregar: ${error.message}</p>`;
+        return;
+      }
+      if (!data || data.length === 0) {
+        grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:var(--brown-light);padding:40px 20px">
+          Nenhum item cadastrado ainda.</p>`;
+        return;
+      }
+      grid.innerHTML = data.map(item => renderCard(item, category)).join('');
+    }
+
+    // ── Render card ───────────────────────────────────────────────────────
+    function renderCard(item, category) {
+      const out   = item.quantity_available <= 0;
+      const low   = !out && item.quantity_available === 1;
+      const avCls = out ? 'out' : low ? 'low' : 'ok';
+      const avTxt = out
+        ? '✕ Já reservado'
+        : low ? '⚡ Último disponível'
+              : `✓ ${item.quantity_available} disponíve${item.quantity_available > 1 ? 'is' : 'l'}`;
+
+      const safeId    = esc(item.id);
+      const safeName  = esc(item.name);
+      const safeEmoji = esc(item.emoji || '🎁');
+      const safeCat   = esc(category);
+
+      return `
+        <div class="item-card${out ? ' reserved' : ''}">
+          <span class="card-emoji">${item.emoji || '🎁'}</span>
+          <div class="card-name">${item.name}</div>
+          <div class="card-desc">${item.description || ''}</div>
+          <div class="card-footer">
+            <div class="avail ${avCls}">
+              <span class="avail-dot"></span>${avTxt}
+            </div>
+            <button class="btn-reserve"
+              ${out ? 'disabled' : `onclick="openModal('${safeId}','${safeName}','${safeEmoji}','${safeCat}')"`}>
+              ${out ? 'Reservado' : 'Quero dar! 🎀'}
+            </button>
+          </div>
+        </div>`;
+    }
+
+    function esc(s) {
+      return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    }
+
+    // ── Modal ─────────────────────────────────────────────────────────────
+    function openModal(id, name, emoji, category) {
+      // Guard: só abre presentes se fraldas estiver feito
+      if (category === 'presentes' && !fraldasDone) {
+        showToast('🧷 Primeiro escolha uma fralda!', 'warn');
+        return;
+      }
+
+      pendingItem = { id, name, emoji, category };
+
+      const isFralda = category === 'fraldas';
+      document.getElementById('modal-step-tag').textContent =
+        isFralda ? 'Passo 1 de 2 — Fraldas' : 'Passo 2 de 2 — Presentes';
+      document.getElementById('modal-emoji').textContent = emoji;
+      document.getElementById('modal-title').textContent  = name;
+      document.getElementById('modal-sub').textContent    =
+        isFralda
+          ? 'Ótima escolha! Qual é o seu nome?'
+          : 'Quase lá! Confirme seu nome para finalizar 🎉';
+
+      const input = document.getElementById('guest-name');
+      input.value = cachedName;   // pre-fill com nome do passo 1
+      input.style.borderColor = '';
+
+      const btn = document.getElementById('btn-confirm');
+      btn.disabled    = false;
+      btn.textContent = 'Confirmar 🎉';
+
+      document.getElementById('overlay').classList.add('open');
+      setTimeout(() => {
+        input.focus();
+        if (cachedName) input.select();
+      }, 280);
+    }
+
+    function closeModal() {
+      document.getElementById('overlay').classList.remove('open');
+      pendingItem = null;
+    }
+
+    function handleOverlayClick(e) {
+      if (e.target === document.getElementById('overlay')) closeModal();
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+    document.getElementById('guest-name').addEventListener('keydown', e => {
+      if (e.key === 'Enter') confirmReservation();
+    });
+
+    // ── Confirm reservation ───────────────────────────────────────────────
+    async function confirmReservation() {
+      const nameInput = document.getElementById('guest-name');
+      const name      = nameInput.value.trim();
+
+      if (!name) {
+        nameInput.focus();
+        nameInput.style.borderColor = 'var(--orange)';
+        showToast('Por favor, informe seu nome 😊', 'info');
+        return;
+      }
+
+      const btn = document.getElementById('btn-confirm');
+      btn.disabled    = true;
+      btn.textContent = 'Reservando…';
+
+      try {
+        const { data, error } = await db.rpc('reserve_item', {
+          p_item_id:    pendingItem.id,
+          p_guest_name: name
+        });
+
+        if (error) throw error;
+
+        if (data && data.success === false) {
+          showToast(data.message || 'Item não disponível.', 'error');
+          closeModal();
+          reloadAll();
+          return;
+        }
+
+        // ── Sucesso ────────────────────────────────────────────────────────
+        const { emoji: itemEmoji, category } = pendingItem;
+        cachedName = name;   // guarda o nome para o próximo passo
+        closeModal();
+
+        if (category === 'fraldas') {
+          fraldasDone = true;
+          showToast(`${itemEmoji} Fralda reservada! Agora escolha um presente 🎁`, 'success');
+          await loadItems('presentes');   // garante lista atualizada antes de mostrar
+          setStep(2);                     // avança o indicador e troca de aba
+        } else {
+          // Passo 2 concluído → tela de conclusão
+          showToast(`${itemEmoji} Tudo reservado! Obrigado, ${name}! 💛`, 'success');
+          await reloadAll();
+          showDoneScreen(name);
+        }
+
+      } catch (err) {
+        console.error(err);
+        showToast('Erro ao reservar. Tente novamente.', 'error');
+        btn.disabled    = false;
+        btn.textContent = 'Confirmar 🎉';
+      }
+    }
+
+    // ── Done screen ───────────────────────────────────────────────────────
+    function showDoneScreen(name) {
+      // Oculta tudo e mostra tela de conclusão
+      document.getElementById('content-fraldas').classList.remove('active');
+      document.getElementById('content-presentes').classList.remove('active');
+      document.getElementById('hint-banner').classList.remove('show');
+
+      const done = document.getElementById('done-screen');
+      document.getElementById('done-name').textContent = name + ', obrigado(a) pela sua presença e carinho! 💛';
+      done.classList.add('show');
+
+      // Atualiza indicador: ambos done
+      const btn2 = document.getElementById('step-btn-2');
+      const c2   = document.getElementById('step-circle-2');
+      btn2.className = 'step-btn done';
+      c2.textContent = '✓';
+
+      // Scroll suave até a tela
+      done.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────
+    async function reloadAll() {
+      await Promise.all([loadItems('fraldas'), loadItems('presentes')]);
+    }
+
+    function showToast(msg, type = 'info') {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className   = `toast ${type} show`;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.remove('show'), 4500);
+    }
+  </script>
+</body>
+</html>
